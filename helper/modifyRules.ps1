@@ -99,7 +99,7 @@ $strScriptFullPath = $myInvocation.MyCommand.Path
 $strScriptName = $myInvocation.MyCommand.Name
 $strLogFileSubDir = "Logfiles"
 
-Import-Module (Join-Path $strScriptPath "CCV.Logging\CCV.Logging.psd1") -Force
+Import-Module (Join-Path $strScriptPath "..\CCV.Logging\CCV.Logging.psd1") -Force
 
 if ($bolOutputFile)
 {
@@ -234,10 +234,10 @@ function Read-ExitOrNewOrDisable() {
 ##################################################################################################
 ##################################################################################################
 # try to load existing rules.json file
-if (Test-Path -LiteralPath (Join-Path $strScriptPath "rules.json") -PathType Leaf) {
-    $rulesJSON = Get-Content -Raw -Path (Join-Path $strScriptPath "rules.json") | ConvertFrom-Json
+if (Test-Path -LiteralPath (Join-Path $strScriptPath "\..\configuration\rules.json") -PathType Leaf) {
+    $rulesJSON = Get-Content -Raw -Path (Join-Path $strScriptPath "\..\configuration\rules.json") | ConvertFrom-Json
 } else {
-    Write-CCVLog "Error" "Rules.json should be in the same path as this script is executed."
+    Write-CCVLog "Error" "rules.json should be in configuration folder."
     StopScript
 }
 
