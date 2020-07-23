@@ -11,16 +11,13 @@
 # - <<function ...>>
 #
 # METADATA:
-# <<Customer Company>>/<<Customer Contact Person>>, CCVOSSEL GmbH
+# CCVOSSEL GmbH
 #
 # SYNTAX: <scriptname>.ps1 
 #         -<<parameter name 1>> <<short description of value 1>> 
 #         -<<parameter name 2>> <<short description of value 2>> 
 #         [-Output display|file|displayandfile|none]
 #
-# -<<parameter1>>: <<description of parameter 1>>
-#
-# -<<parameter2>>: <<description of parameter 2>>
 #
 #        Output  : possible values: display, file, displayandfile, none
 #                  display = output to standard output only
@@ -32,12 +29,6 @@
 # Sample call: 
 # <<sample call with arguments>>
 ##################################################################################################
-# REMARKS:
-#
-# VERSION HISTORY:
-# - 21.04.2020: v0.1.0 Creating a scheduled task for analyzer
-##################################################################################################
-
 
 ##################################################################################################
 # Parameters
@@ -125,6 +116,8 @@ Write-CCVLogHead -strScriptFileName $strScriptName -strScriptVersion $strScriptV
 ##################################################################################################
 # Global Constants
 ##################################################################################################
+$gMSAName = "gMSATest1$"
+$scheduledTaskName = "ccPowerShellProtect"
 
 ##################################################################################################
 ##################################################################################################
@@ -189,19 +182,21 @@ function StopScript {
 
 # delete task if existing
 Try {
-    schtasks /delete /f /TN "Event Viewer Tasks\ccPowerShellProtect"
+    schtasks /delete /f /TN $scheduledTaskName
 }
-Catch(error) {
+Catch {
     Write-Log "warning" "Could not delete old scheduled tasks"
     Write-Log "warning" $_
 }
 
-
 # create new task
-if (Test-Path -LiteralPath (Join-Path $strScriptPath "ccScheduledTask.xml") -PathType Leaf) {
-    schtasks /create /TN "Event Viewer Tasks\ccPowerShellProtect" /XML (Join-Path $strScriptPath "ccScheduledTask.xml")
+if (Test-Path -LiteralPath (Join-Path $strScriptPath "scheduledTask.xml") -PathType Leaf) {
+    $principal = New-ScheduledTaskPrincipal -UserID "sec.demo.local\$gMSAName" -LogonType Password
+    $xml = Get-Content (Join-Path $strScriptPath "scheduledTask.xml") | Out-String
+
+    Register-ScheduledTask -TaskName $scheduledTaskName -Xml (Get-Content (Join-Path $strScriptPath "scheduledTask.xml") | Out-String)
 } else {
-    Write-CCVLog "Error" "ccScheduledTask.xml should be in the same path as this script is executed."
+    Write-CCVLog "Error" "scheduledTask.xml should be in the same path as this script is executed."
     StopScript
 }
 
