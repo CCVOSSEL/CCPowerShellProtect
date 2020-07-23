@@ -29,23 +29,6 @@
 # Sample call: 
 # ccAnalyzer.ps1 -eventRecordID "878" - eventCreatedTime -eventUserSID "S-1-5-21-3270792536-1858956553-1543462974-1101"
 ##################################################################################################
-# REMARKS:
-#
-# VERSION HISTORY:
-# - 14.04.2020: v0.1.0 Watching file changes and parsing file content
-# - 15.04.2020: v0.2.0 Watching event changes instead of files, parsing event details
-# - 16.04.2020: v0.2.1 checking event message for harmful content
-# - 17.04.2020: v0.2.2 sending mail on harmful command
-# - 20.04.2020: v0.2.3 working with winevent
-# - 21.04.2020: v0.2.4 filerting winevent, working with scheduled task
-# - 27.04.2020: v0.2.5 Send only notification when badness over threshold
-# - 27.04.2020: v0.2.6 Send mail to user or admin
-# - 28.04.2020: v0.2.7 Query performance improved x15
-# - 29.04.2020: v0.2.8 Making code more fail save, validating emails addresses
-# - 14.05.2020: v0.3.0 Adding Splunk support
-# - 14.05.2020: v0.3.1 Optionally send all events to splunk
-##################################################################################################
-
 
 ##################################################################################################
 # Parameters
@@ -66,6 +49,15 @@ Param (
 ##################################################################################################
 ##################################################################################################
 
+# region Include required files
+#
+try {
+    . ("modules\mail.ps1")
+}
+catch {
+    Write-Host "Error while loading supporting PowerShell Scripts" 
+}
+#endregion
 
 ##################################################################################################
 # Parameter check
@@ -191,39 +183,6 @@ function CheckMandatoryParameter($strParamName,$strParamValue)
     }
 }
 
-function Send-Mail {
-    Param
-   (
-       [Parameter(Mandatory=$true)]
-       [String] $From,
-
-       [Parameter(Mandatory=$true)]
-       [String] $To,
-
-       [Parameter(Mandatory=$true)]
-       [string] $ApiKey,
-
-       [Parameter(Mandatory=$true)]
-       [string] $Subject,
-
-       [Parameter(Mandatory=$true)]
-       [string] $Body
-   )
-
-   $headers = @{}
-   [void]$headers.Add("Authorization","Bearer $apiKey")
-   [void]$headers.Add("Content-Type", "application/json")
-
-   $jsonRequest = [ordered]@{
-                           personalizations= @(@{to = @(@{email =  "$To"})
-                               subject = "$SubJect" })
-                               from = @{email = "$From"}
-                               content = @( @{ type = "text/html"
-                                           value = "$Body" }
-                               )} | ConvertTo-Json -Depth 10
-    Invoke-RestMethod -Uri "https://api.sendgrid.com/v3/mail/send" -Method Post -Headers $headers -Body $jsonRequest 
-}
-
 function Get-EventExecutionPath {
     Param (
         [Parameter(Mandatory=$true)]
@@ -282,46 +241,6 @@ function Remove-MultipleWhitespaces {
     )
     # To get rid of multiple whitespaces, tabs, 
     return  $EventMessage.replace('\s+\r\n+',"").replace("`t","")
-}
-
-function New-MailBody {
-    Param (
-        [Parameter(Mandatory=$true)]
-        [string]$match,
-        [string]$matchComment,
-        [int]$badness,
-        [Parameter(Mandatory=$true)]
-        [DateTime]$eventTime,
-        [Parameter(Mandatory=$true)]
-        [string]$eventMachine,
-        [Parameter(Mandatory=$true)]
-        [string]$PSCodeLines,
-        [Parameter(Mandatory=$true)]
-        [string]$eventPath,
-        [Parameter(Mandatory=$true)]
-        [string]$eventUser
-    )
-
-    $Body = "Dear Customer," + "<br/><br/>"
-
-    $Body += "This is a new alert from ccPowerShellProtect. While analyzing the logs, I found the following suspicious command:"+ "<br/><br/>"
-    $Body += "<b>Time: </b>" + $eventTime + "<br/>"
-    $Body += "<b>User: </b>" + $eventUser + "<br/>" 
-    $Body += "<b>MachineName: </b>" + $eventMachine + "<br/>" 
-    $Body += "<b>Path: </b>" + $eventPath + "<br/>"              
-    $Body += "<b>Suspicious Code: </b>" + $PSCodeLines + "<br/>"
-    $Body += "<b>Badness: </b>"
-
-    if ($badness -eq 1) { $Body += "<span style='color:green'>$badness </span>" }
-    elseif ($badness -eq 2) {$Body += "<span style='color:orange'>$badness </span>" }
-    elseif ($badness -eq 3) {$Body += "<span style='color:red'>$badness </span>" }
-
-    $Body += "<br/>"
-    $Body += "<b>Triggered Rule: </b>" + $match + "<br/>"
-    $Body += "<b>Why is this dangerous?: </b>" + $matchComment + "<br/><br/>"
-    $Body += "Kind regards, " + "<br/>" + "CCVOSSEL Security Team"
-
-    return $Body
 }
 
 function Get-ADUserEmail ($userName) {
