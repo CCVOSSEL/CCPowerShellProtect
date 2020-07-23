@@ -139,8 +139,8 @@ Write-CCVLogHead -strScriptFileName $strScriptName -strScriptVersion $strScriptV
 ##################################################################################################
 # Global Constants
 ##################################################################################################
-$rulesPath = Join-Path $strScriptPath "rules.json"
-$configPath = Join-Path $strScriptPath "config.json"
+$rulesPath = Join-Path $strScriptPath "\configuration\rules.json"
+$configPath = Join-Path $strScriptPath "\configuration\config.json"
 
 ##################################################################################################
 ##################################################################################################

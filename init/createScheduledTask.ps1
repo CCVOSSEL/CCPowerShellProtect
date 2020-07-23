@@ -103,7 +103,7 @@ $strScriptFullPath = $myInvocation.MyCommand.Path
 $strScriptName = $myInvocation.MyCommand.Name
 $strLogFileSubDir = "Logfiles"
 
-Import-Module (Join-Path $strScriptPath "CCV.Logging\CCV.Logging.psd1") -Force
+Import-Module (Join-Path $strScriptPath "..\CCV.Logging\CCV.Logging.psd1") -Force
 
 if ($bolOutputFile)
 {
