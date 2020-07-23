@@ -1,0 +1,85 @@
+<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'>
+    <System>
+        <Provider Name='Microsoft-Windows-PowerShell' Guid='{a0c1853b-5c40-4b15-8766-3cf1c58f985a}'/>
+        <EventID>4104</EventID>
+        <Version>1</Version>
+        <Level>5</Level>
+        <Task>2</Task>
+        <Opcode>15</Opcode>
+        <Keywords>0x0</Keywords>
+        <TimeCreated SystemTime='2020-04-20T10:18:03.565295000Z'/>
+        <EventRecordID>475</EventRecordID>
+        <Correlation ActivityID='{87b1a15c-14c6-0000-3c22-b487c614d601}'/>
+        <Execution ProcessID='6320' ThreadID='8080'/>
+        <Channel>Microsoft-Windows-PowerShell/Operational</Channel>
+        <Computer>DESKTOP-V9H9H0E.sec.demo.local</Computer>
+        <Security UserID='S-1-5-21-3270792536-1858956553-1543462974-1101'/>
+    </System>
+    <EventData>
+        <Data Name='MessageNumber'>1</Data>
+        <Data Name='MessageTotal'>1</Data>
+        <Data Name='ScriptBlockText'>Get-Command Get-Date</Data>
+        <Data Name='ScriptBlockId'>2b32b9b3-b089-47f6-b560-570ae4b254cb</Data>
+        <Data Name='Path'></Data>
+    </EventData>
+    <RenderingInfo Culture='en-US'>
+    <Message>Creating Scriptblock text (1 of 1):
+        Get-Command Get-Date
+
+        ScriptBlock ID: 2b32b9b3-b089-47f6-b560-570ae4b254cb
+        Path: 
+    </Message>
+    <Level>Verbose</Level>
+    <Task>Execute a Remote Command</Task>
+    <Opcode>On create calls</Opcode>
+    <Channel>Microsoft-Windows-PowerShell/Operational</Channel>
+    <Provider></Provider>
+    <Keywords></Keywords>
+    </RenderingInfo>
+</Event>
+
+<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'>
+    <System>
+        <Provider Name='Windows Error Reporting'/>
+        <EventID Qualifiers='0'>1001</EventID>
+        <Level>4</Level>
+        <Task>0</Task>
+        <Keywords>0x80000000000000</Keywords>
+        <TimeCreated SystemTime='2020-03-22T04:24:41.587002800Z'/>
+        <EventRecordID>475</EventRecordID>
+        <Channel>Application</Channel>
+        <Computer>VattenTestADC.sec.demo.local</Computer>
+        <Security/>
+    </System>
+    <EventData>
+        <Data></Data>
+        <Data>0</Data>
+        <Data>NetworkDiagnosticsFrameworkV3</Data>
+        <Data>Not available</Data>
+        <Data>0</Data>
+        <Data>Microsoft</Data>
+        <Data>AddressAcquisition [1.0]</Data>
+        <Data>2</Data>
+        <Data>8008F906</Data>
+        <Data>{07D37F7B-FA5E-4443-BDA7-AB107B29AFB9}</Data>
+        <Data>AddressAcquisition [1.0]</Data>
+        <Data>{271FFA7D-FD14-4cd5-8C8F-974956ED2D92}</Data>
+        <Data>netvsc.sys</Data>
+        <Data>10.0.17763.1 15/09/2018</Data>
+        <Data></Data>
+        <Data>
+            \\?\C:\Windows\system32\NDF\{0E2D8B74-3AC4-4CCD-B21E-34A674E02B03}-WER-03182020-0737.etl
+            \\?\C:\ProgramData\Microsoft\Windows\WER\Temp\WERBD38.tmp.WERInternalMetadata.xml
+            \\?\C:\ProgramData\Microsoft\Windows\WER\Temp\WERBD58.tmp.xml
+            \\?\C:\ProgramData\Microsoft\Windows\WER\Temp\WERBD86.tmp.csv
+            \\?\C:\ProgramData\Microsoft\Windows\WER\Temp\WERBD97.tmp.txt
+        </Data>
+        <Data>\\?\C:\ProgramData\Microsoft\Windows\WER\ReportQueue\NonCritical_Microsoft_5dab367eaf7d2fa7c4fba9d4e7a9f57a2ea903c_00000000_cab_044ebda5</Data>
+        <Data></Data>
+        <Data>0</Data>
+        <Data>9ce1c798-8193-4bc0-9d5a-9097d4d47fcb</Data>
+        <Data>100</Data>
+        <Data></Data>
+        <Data>0</Data>
+        </EventData>
+    </Event>
