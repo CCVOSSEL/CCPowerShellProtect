@@ -1,4 +1,3 @@
-
 function Send-Mail {
     Param
    (
@@ -51,14 +50,18 @@ function New-MailBody {
         [string]$eventUser
     )
 
+    # add HTML encode methods
+    Add-Type -AssemblyName System.Web
+
     $Body = "Dear Customer," + "<br/><br/>"
 
+    # ToDo write a method for htmlencode
     $Body += "This is a new alert from ccPowerShellProtect. While analyzing the logs, I found the following suspicious command:"+ "<br/><br/>"
     $Body += "<b>Time: </b>" + $eventTime + "<br/>"
-    $Body += "<b>User: </b>" + $eventUser + "<br/>" 
-    $Body += "<b>MachineName: </b>" + $eventMachine + "<br/>" 
-    $Body += "<b>Path: </b>" + $eventPath + "<br/>"              
-    $Body += "<b>Suspicious Code: </b>" + $PSCodeLines + "<br/>"
+    $Body += "<b>User: </b>" + [System.Web.HttpUtility]::HtmlEncode($eventUser) + "<br/>" 
+    $Body += "<b>MachineName: </b>" + [System.Web.HttpUtility]::HtmlEncode($eventMachine) + "<br/>" 
+    $Body += "<b>Path: </b>" + [System.Web.HttpUtility]::HtmlEncode($eventPath) + "<br/>"              
+    $Body += "<b>Suspicious Code: </b>" + [System.Web.HttpUtility]::HtmlEncode($PSCodeLines) + "<br/>"
     $Body += "<b>Badness: </b>"
 
     if ($badness -eq 1) { $Body += "<span style='color:green'>$badness </span>" }
@@ -66,8 +69,8 @@ function New-MailBody {
     elseif ($badness -eq 3) {$Body += "<span style='color:red'>$badness </span>" }
 
     $Body += "<br/>"
-    $Body += "<b>Triggered Rule: </b>" + $match + "<br/>"
-    $Body += "<b>Why is this dangerous?: </b>" + $matchComment + "<br/><br/>"
+    $Body += "<b>Triggered Rule: </b>" + [System.Web.HttpUtility]::HtmlEncode($match) + "<br/>"
+    $Body += "<b>Why is this dangerous?: </b>" + [System.Web.HttpUtility]::HtmlEncode($matchComment) + "<br/><br/>"
     $Body += "Kind regards, " + "<br/>" + "CCVOSSEL Security Team"
 
     return $Body
