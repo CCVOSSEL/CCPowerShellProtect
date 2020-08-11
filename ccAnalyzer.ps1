@@ -40,7 +40,7 @@ Param (
     $eventCreatedTime,
     [Parameter(Mandatory=$true)]
     $eventUserSID, 
-    [string]$Output = "none"
+    [string]$Output = "file"
 )
 
 ##################################################################################################
@@ -52,7 +52,7 @@ Param (
 # region Include required files
 #
 try {
-    . ("modules\mail.ps1")
+    . ("modules\sendGrid.ps1")
     . ("modules\splunk.ps1")
 }
 catch {
@@ -132,7 +132,7 @@ Write-CCVLogHead -strScriptFileName $strScriptName -strScriptVersion $strScriptV
 ##################################################################################################
 # Global Constants
 ##################################################################################################
-$rulesPath = Join-Path $strScriptPath "\configuration\rules.json"
+$rulesPath  = Join-Path $strScriptPath "\configuration\rules.json"
 $configPath = Join-Path $strScriptPath "\configuration\config.json"
 
 ##################################################################################################
@@ -184,6 +184,30 @@ function CheckMandatoryParameter($strParamName,$strParamValue)
     }
 }
 
+function Extract-Metadata {
+    Param (
+        [Parameter(Mandatory=$true)]
+        [string]$EventMessage
+    )
+    # Matches the beginning of the line until ): and a new line
+    # this indicates the first line which is usually smth like 'Creating Scriptblock text (1 of 1):'
+   
+    #return  ($EventMessage -split '^.*\)\:')[1]
+
+    $lines = $EventMessage -split '\n' 
+
+    $command = ""
+    foreach ( $word in $lines[1 .. ($lines.Count - 4)] ) { 
+        $command += $word + ' '
+    }
+
+    # remove two last lines, because of empty last line
+    $path =  $lines[$lines.Count - 2]
+
+    [string[]]$returnArray = $command,$path
+    return $returnArray
+}
+
 function Get-EventExecutionPath {
     Param (
         [Parameter(Mandatory=$true)]
@@ -191,7 +215,7 @@ function Get-EventExecutionPath {
     )
     # Matches the beginning of the path line until 'Path:' 
     # this indicates the path line which is usually smth like 'Path: C:\Windows\TEMP\SDIAG_141a5465-4c2b-4e13-86e7-9787237a38c1\TS_DiagnosticHistory.ps1'
-    $path = ($EventMessage -split 'Path\: ')[1]
+    $path = ($EventMessage -split '\: ')[1]
     $pathClean = ($path -split '\n')[0].Trim()
 
     # path is empty, if command is invoked by user
@@ -200,48 +224,6 @@ function Get-EventExecutionPath {
     } else {
         return "Interactively by user"
     }
-}
-
-function Remove-LastLines {
-    Param (
-        [Parameter(Mandatory=$true)]
-        [string]$EventMessage
-    )
-    # Matches the beginning of the line until ): and a new line
-    # this indicates the second last line which is usually smth like:
-    # }
-    # 
-    # ScriptBlock ID: 420e6429-ddc6-41e9-9eb5-3b35a838ab45'
-    return ($EventMessage -split '\n\s\nScriptBlock ID\: ')[0]
-}
-
-function Remove-FirstLine {
-    Param (
-        [Parameter(Mandatory=$true)]
-        [string]$EventMessage
-    )
-    # Matches the beginning of the line until ): and a new line
-    # this indicates the first line which is usually smth like 'Creating Scriptblock text (1 of 1):'
-   
-    return  ($EventMessage -split '^.*\)\:')[1]
-}
-
-function Remove-NewLines {
-    Param (
-        [Parameter(Mandatory=$true)]
-        [string]$EventMessage
-    )
-    # To get rid of newline characters '`n' and '`r' and windows
-    return  $EventMessage.replace("`n","").replace("`r","").replace("\n","")
-}
-
-function Remove-MultipleWhitespaces {
-    Param (
-        [Parameter(Mandatory=$true)]
-        [string]$EventMessage
-    )
-    # To get rid of multiple whitespaces, tabs, 
-    return  $EventMessage.replace('\s+\r\n+',"").replace("`t","")
 }
 
 function Get-ADUserEmail ($userName) {
@@ -284,26 +266,26 @@ $settings = [System.IO.File]::ReadAllLines((Resolve-Path $configPath)) | Convert
 
 $event = Get-WinEvent -FilterHashtable @{LogName='Application';ID=4104;StartTime=$eventCreatedTime} | Where-Object -Property RecordId -eq $eventRecordID
 
+
 # event.Message is Type System.Object[]
 $eventMessage = $event.Message | Out-String
+
 # prepare event message and clean unnecessary lines and characters
-$eventMessage = Remove-FirstLine $eventMessage
-$PSCodeLines = Remove-LastLines $eventMessage
-$PSCodeLines = Remove-NewLines $PSCodeLines 
-$PSCodeLines = Remove-MultipleWhitespaces $PSCodeLines
+$eventMetadata = Extract-Metadata $eventMessage
+$PSCodeLines = $eventMetadata[0]
 
 # extract event meta data
-$eventPath = Get-EventExecutionPath $eventMessage
+$eventPath = Get-EventExecutionPath $eventMetadata[1]
 $eventTime = $event.TimeCreated
 $eventMachine = $event.MachineName
 $eventUser = Convert-SIDToUserName $event.UserId
 
-Write-CCVLog "debug" "EventId: $eventRecordID"
-Write-CCVLog "debug" "Command: $PSCodeLines"
-Write-CCVLog "debug" "Time: $eventTime"
-Write-CCVLog "debug" "MachineName: $eventMachine"
-Write-CCVLog "debug" "User: $eventUser"
-Write-CCVLog "debug" "Path: $eventPath"
+Write-CCVLog "info" "EventId: $eventRecordID"
+Write-CCVLog "info" "Command: $PSCodeLines"
+Write-CCVLog "info" "Time: $eventTime"
+Write-CCVLog "info" "MachineName: $eventMachine"
+Write-CCVLog "info" "User: $eventUser"
+Write-CCVLog "info" "Path: $eventPath"
 
 # filter for malicious content      
 $matched = $false
@@ -311,7 +293,6 @@ $PSCodeLinesLower = $PSCodeLines.ToLower()
 foreach ($rule in $rules.rules) {
     if (($PSCodeLinesLower) -match ($rule.rule)) {
         $matched = $true
-
         Write-CCVLog "warning" $PSCodeLines $bolOutputDisplay $true $ColorHighlight
 
         # send mail only if badness is above threshold in config.json
@@ -341,6 +322,8 @@ foreach ($rule in $rules.rules) {
                         -ApiKey $settings.config.notifications.apiKey `
                         -Body $Body `
                         -Subject $Subject  
+
+            Write-CCVLog "info" "sent mail"
         }
 
         # send event to splunk if enabled
