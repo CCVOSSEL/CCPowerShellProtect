@@ -293,8 +293,8 @@ $PSCodeLinesLower = $PSCodeLines.ToLower()
 foreach ($rule in $rules.rules) {
     if (($PSCodeLinesLower) -match ($rule.rule)) {
         $matched = $true
-        Write-CCVLog "warning" $PSCodeLines $bolOutputDisplay $true $ColorHighlight
-
+        Write-CCVLog "warning" "Detected harmful command: " + $PSCodeLines $bolOutputDisplay $true $ColorHighlight
+        Write-CCVLog "Warning" "Badness: " + $rule.badness
         # send mail only if badness is above threshold in config.json
         if ($rule.badness -gt $settings.config.notifications.badnessThreshold) {
             # create and send mail
