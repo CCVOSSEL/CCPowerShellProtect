@@ -118,6 +118,7 @@ Write-CCVLogHead -strScriptFileName $strScriptName -strScriptVersion $strScriptV
 ##################################################################################################
 $gMSAName = "gMSATest1$"
 $scheduledTaskName = "ccPowerShellProtect"
+$domain = "sec.demo.local"
 
 ##################################################################################################
 ##################################################################################################
@@ -191,7 +192,7 @@ Catch {
 
 # create new task
 if (Test-Path -LiteralPath (Join-Path $strScriptPath "scheduledTask.xml") -PathType Leaf) {
-    $principal = New-ScheduledTaskPrincipal -UserID "sec.demo.local\$gMSAName" -LogonType Password
+    $principal = New-ScheduledTaskPrincipal -UserID "$domain\$gMSAName" -LogonType Password
     $xml = Get-Content (Join-Path $strScriptPath "scheduledTask.xml") | Out-String
 
     Register-ScheduledTask -TaskName $scheduledTaskName -Xml (Get-Content (Join-Path $strScriptPath "scheduledTask.xml") | Out-String)
