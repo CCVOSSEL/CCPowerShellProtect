@@ -238,7 +238,7 @@ function Get-ADUserEmail ($userName) {
 
 function Convert-SIDToUserName ($sid) {
     Try {
-        $objSID = New-Object System.Security.Principal.SecurityIdentifier($SID)
+        $objSID = New-Object System.Security.Principal.SecurityIdentifier($sid)
         $objUser = $objSID.Translate([System.Security.Principal.NTAccount])
         return $objUser.Value
     } 
@@ -260,9 +260,8 @@ function Convert-SIDToUserName ($sid) {
 $rules = [System.IO.File]::ReadAllLines((Resolve-Path $rulesPath)) | ConvertFrom-Json
 $settings = [System.IO.File]::ReadAllLines((Resolve-Path $configPath)) | ConvertFrom-Json
 
-# $psEvent = Get-WinEvent -FilterHashtable @{LogName='Application';ID=4104;StartTime=$eventCreatedTime} | Where-Object -Property RecordId -eq $eventRecordID
-$psEvent = Get-WinEvent -FilterHashtable @{LogName='Application';ID=4104} | Where-Object -Property RecordId -eq $eventRecordID
-
+$psEvent = Get-WinEvent -FilterHashtable @{LogName='Application';ID=4104;StartTime=$eventCreatedTime} | Where-Object -Property RecordId -eq $eventRecordID
+# $psEvent = Get-WinEvent -FilterHashtable @{LogName='Application';ID=4104} | Where-Object -Property RecordId -eq $eventRecordID # for debugging
 
 Write-CCVLog "info" "Trigger forwarded following details: StartTime $eventCreatedTime, EventID $eventRecordID"
 
@@ -277,6 +276,10 @@ $PSCodeLines = $eventMetadata[0]
 $eventPath = Get-EventExecutionPath $eventMetadata[1]
 $eventTime = $psEvent.TimeCreated
 $eventMachine = $psEvent.MachineName
+
+$userIdString = "UserId: " + $psEvent.UserId
+Write-CCVLog "info" $userIdString
+
 $eventUser = Convert-SIDToUserName $psEvent.UserId
 
 Write-CCVLog "info" "EventId: $eventRecordID"
