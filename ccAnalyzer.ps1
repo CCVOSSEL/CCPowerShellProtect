@@ -35,7 +35,6 @@
 Param (
     [Parameter(Mandatory=$true)]
     [string]$eventRecordID,
-    [Parameter(Mandatory=$true)]
     $eventCreatedTime,
     [string]$Output = "file"
 )
@@ -251,7 +250,7 @@ function Convert-SIDToUserName ($sid) {
 
 ##################################################################################################
 ##################################################################################################
-###########################################################################power#######################
+##################################################################################################
 # Main program
 ##################################################################################################
 ##################################################################################################
@@ -261,11 +260,14 @@ function Convert-SIDToUserName ($sid) {
 $rules = [System.IO.File]::ReadAllLines((Resolve-Path $rulesPath)) | ConvertFrom-Json
 $settings = [System.IO.File]::ReadAllLines((Resolve-Path $configPath)) | ConvertFrom-Json
 
-# $event = Get-WinEvent -FilterHashtable @{LogName='Application';ID=4104;StartTime=$eventCreatedTime} | Where-Object -Property RecordId -eq $eventRecordID
-$event = Get-WinEvent -FilterHashtable @{LogName='Application';ID=4104;StartTime=$eventCreatedTime} | Where-Object -Property RecordId -eq 299
+# $psEvent = Get-WinEvent -FilterHashtable @{LogName='Application';ID=4104;StartTime=$eventCreatedTime} | Where-Object -Property RecordId -eq $eventRecordID
+$psEvent = Get-WinEvent -FilterHashtable @{LogName='Application';ID=4104} | Where-Object -Property RecordId -eq $eventRecordID
+
+
+Write-CCVLog "info" "Trigger forwarded following details: StartTime $eventCreatedTime, EventID $eventRecordID"
 
 # event.Message is Type System.Object[]
-$eventMessage = $event.Message | Out-String
+$eventMessage = $psEvent.Message | Out-String
 
 # prepare event message and clean unnecessary lines and characters
 $eventMetadata = Extract-Metadata $eventMessage
@@ -273,9 +275,9 @@ $PSCodeLines = $eventMetadata[0]
 
 # extract event meta data
 $eventPath = Get-EventExecutionPath $eventMetadata[1]
-$eventTime = $event.TimeCreated
-$eventMachine = $event.MachineName
-$eventUser = Convert-SIDToUserName $event.UserId
+$eventTime = $psEvent.TimeCreated
+$eventMachine = $psEvent.MachineName
+$eventUser = Convert-SIDToUserName $psEvent.UserId
 
 Write-CCVLog "info" "EventId: $eventRecordID"
 Write-CCVLog "info" "Command: $PSCodeLines"
@@ -290,8 +292,10 @@ $PSCodeLinesLower = $PSCodeLines.ToLower()
 foreach ($rule in $rules.rules) {
     if (($PSCodeLinesLower) -match ($rule.rule)) {
         $matched = $true
-        Write-CCVLog "warning" "Detected harmful command: " + $PSCodeLines $bolOutputDisplay $true $ColorHighlight
-        Write-CCVLog "Warning" "Badness: " + $rule.badness
+        Write-CCVLog "warning" "Detected harmful command: $PSCodeLines"
+        $badnessLogString = "Badness: " + $rule.badness
+        Write-CCVLog "warning" $badnessLogString
+
         # send mail only if badness is above threshold in config.json
         if ($rule.badness -gt $settings.config.notifications.badnessThreshold) {
             # create and send mail
@@ -320,7 +324,7 @@ foreach ($rule in $rules.rules) {
                         -Body $Body `
                         -Subject $Subject  
 
-            Write-CCVLog "info" "sent mail"
+            Write-CCVLog "info" "Sent mail to $mailTo"
         }
 
         # send event to splunk if enabled
