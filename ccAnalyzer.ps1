@@ -16,7 +16,6 @@
 # SYNTAX: ccAnalyzer.ps1 
 #         -eventRecordID The unique record id of the event, that triggered the script
 #         -eventCreatedTime The creation time of the event, that triggered the script
-#         -eventUserSID User of the event, that triggered the script 
 #         [-Output display|file|displayandfile|none]
 #
 #        Output  : possible values: display, file, displayandfile, none
@@ -27,7 +26,7 @@
 #
 ##################################################################################################
 # Sample call: 
-# ccAnalyzer.ps1 -eventRecordID "878" - eventCreatedTime -eventUserSID "S-1-5-21-3270792536-1858956553-1543462974-1101"
+# ccAnalyzer.ps1 -eventRecordID "878" - eventCreatedTime 
 ##################################################################################################
 
 ##################################################################################################
@@ -38,8 +37,6 @@ Param (
     [string]$eventRecordID,
     [Parameter(Mandatory=$true)]
     $eventCreatedTime,
-    [Parameter(Mandatory=$true)]
-    $eventUserSID, 
     [string]$Output = "file"
 )
 
@@ -247,8 +244,8 @@ function Convert-SIDToUserName ($sid) {
         return $objUser.Value
     } 
     Catch {
-        Write-CCVLog "warning" "Could not convert SID to username"
-        Write-CCVLog "warning" "Error:$_"
+        Write-CCVLog "warning" "Could not convert SID $sid to username"
+        Write-CCVLog "warning" "Error: $_"
     } 
 }
 
@@ -264,8 +261,8 @@ function Convert-SIDToUserName ($sid) {
 $rules = [System.IO.File]::ReadAllLines((Resolve-Path $rulesPath)) | ConvertFrom-Json
 $settings = [System.IO.File]::ReadAllLines((Resolve-Path $configPath)) | ConvertFrom-Json
 
-$event = Get-WinEvent -FilterHashtable @{LogName='Application';ID=4104;StartTime=$eventCreatedTime} | Where-Object -Property RecordId -eq $eventRecordID
-
+# $event = Get-WinEvent -FilterHashtable @{LogName='Application';ID=4104;StartTime=$eventCreatedTime} | Where-Object -Property RecordId -eq $eventRecordID
+$event = Get-WinEvent -FilterHashtable @{LogName='Application';ID=4104;StartTime=$eventCreatedTime} | Where-Object -Property RecordId -eq 299
 
 # event.Message is Type System.Object[]
 $eventMessage = $event.Message | Out-String
