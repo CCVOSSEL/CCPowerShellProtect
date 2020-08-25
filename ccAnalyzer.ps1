@@ -271,6 +271,7 @@ $eventMessage = $psEvent.Message | Out-String
 # prepare event message and clean unnecessary lines and characters
 $eventMetadata = Extract-Metadata $eventMessage
 $PSCodeLines = $eventMetadata[0]
+$PSCodeLines = $PSCodeLines.Trim()
 
 # extract event meta data
 $eventPath = Get-EventExecutionPath $eventMetadata[1]
