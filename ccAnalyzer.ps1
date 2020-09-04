@@ -115,7 +115,7 @@ if ($bolOutputFile)
     # Create log file
     ##################################################################################################
 
-    New-CCVLog -strLogFolderPath $strLogFileDir  -strLogFileName ($strScriptName -replace ".ps1",".log")
+    New-CCVLog -strLogFolderPath $strLogFileDir  -strLogFileName (($strScriptName -replace ".ps1",".") + "-" + $eventRecordID  + ".log")
 }
 
 
@@ -301,7 +301,7 @@ foreach ($rule in $rules.rules) {
         Write-CCVLog "warning" $badnessLogString
 
         # send mail only if badness is above threshold in config.json
-        if ($rule.badness -gt $settings.config.notifications.badnessThreshold) {
+        if ($rule.badness -gt $settings.config.notifications.badnessThresholdAdmin) {
             # create and send mail
             $Subject = "ccPowerShellProtect - New alert"
             $Body = New-MailBody -match $rule.rule `
@@ -314,6 +314,7 @@ foreach ($rule in $rules.rules) {
                                     -eventPath $eventPath
 
             # send mail to user/admin depending on config.json
+            $mailTo = ""
             if ($settings.config.notifications.sendNotificationToUser) {
                 # remove the domain\ prefix of the username
                 $cleanUsername = ($eventUser -split "\\")[1]
