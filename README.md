@@ -12,4 +12,5 @@ Auch das Bundesamt für Sicherheit in der Informationstechnik (BSI) empfiehlt di
 „Die PowerShell-Ausführung selbst SOLLTE zentral protokolliert und die Protokolle überwacht werden.“
 Zur Umsetzung dieser Anforderung haben unsere Recherchen keine einfache, kostengünstige Lösung auf dem Markt gefunden. Daher haben wir beschlossen unsere eigene, schlanke, aber effektive Lösung für das PowerShell-Monitoring zu entwickeln.
 
-Wie die CCVOSSEL GmbH das PowerShell-Monitoring umgesetzt hat, die dabei entstandene FOSS-Lösung (Free and Open Source Software) „CCPowerShellProtect“ funktioniert und zu verwenden ist, wird in diesem Whitepaper beschrieben.
+Wie die CCVOSSEL GmbH das PowerShell-Monitoring umgesetzt hat, die dabei entstandene FOSS-Lösung (Free and Open Source Software) „CCPowerShellProtect“ funktioniert und zu verwenden ist, wird in einem Whitepaper beschrieben. Dieses finden Sie unter der URL: https://www.ccvossel.de.
+
