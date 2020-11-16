@@ -1,1 +1,1 @@
-# ccPowerShellProtect
+# CCPowerShellProtect
