@@ -48,7 +48,7 @@ Param (
 # region Include required files
 #
 try {
-    . ("modules\sendGrid.ps1")
+    . ("modules\mailer.ps1")
     . ("modules\splunk.ps1")
 }
 catch {
@@ -93,9 +93,7 @@ switch($output.trim().tolower())
 ##################################################################################################
 # Script variables
 ##################################################################################################
-$strScriptVersion = "v.0.3.1"
 $strScriptAuthors = "ThomasKoscheck"
-$strScriptLastChange = "14.05.2020"
 $strScriptFunction = "Analyze PowerShell transcripts and alerting on potentially harmful actions."
 
 ##################################################################################################
@@ -122,7 +120,7 @@ if ($bolOutputFile)
 ##################################################################################################
 # Write log file header
 ##################################################################################################
-Write-CCVLogHead -strScriptFileName $strScriptName -strScriptVersion $strScriptVersion -strScriptAuthors $strScriptAuthors -strScriptLastChange $strScriptLastChange -strScriptFunction $strScriptFunction
+Write-CCVLogHead -strScriptFileName $strScriptName -strScriptAuthors $strScriptAuthors -strScriptFunction $strScriptFunction
 
 
 ##################################################################################################
@@ -164,7 +162,7 @@ function WriteSyntaxError($strErrorMessage)
     Write-Host "               : displayandfile = output to standard output and log file"
     Write-Host "               : none = no output"
     Write-Host ""
-    Write-Host "Script created $strScriptLastChange, $strScriptAuthors"
+    Write-Host "Script created by $strScriptAuthors"
 }
 
 function CheckMandatoryParameter($strParamName,$strParamValue)
@@ -317,15 +315,19 @@ foreach ($rule in $rules.rules) {
             $mailTo = ""
             if ($settings.config.notifications.sendNotificationToUser) {
                 # remove the domain\ prefix of the username
+                Write-CCVLog "info" "sending mail to user"
                 $cleanUsername = ($eventUser -split "\\")[1]
                 $mailTo = Get-ADUserEmail $cleanUsername
             } else {
                 $mailTo = $settings.config.notifications.mailTo
             }
 
-            Send-Mail -from $settings.config.notifications.mailFrom `
+            Write-CCVLog "info" $settings.config.notifications.mailTo
+
+            Send-Mail-Mailjet -from $settings.config.notifications.mailFrom `
                         -to $mailTo `
-                        -ApiKey $settings.config.notifications.apiKey `
+                        -username $settings.config.notifications.username `
+                        -password $settings.config.notifications.passwordAsSecureString
                         -Body $Body `
                         -Subject $Subject  
 
