@@ -1,0 +1,9 @@
+<QueryList>
+  <Query Id="0" Path="Microsoft-Windows-PowerShell/Admin">
+    <Select Path="Microsoft-Windows-PowerShell/Admin">*[System[Provider[@Name='Microsoft-Windows-PowerShell' or @Name='PowerShell'] and (Level=1  or Level=2 or Level=3 or Level=4 or Level=0 or Level=5) and (EventID=4104) and TimeCreated[timediff(@SystemTime) &lt;= 2592000000]]]</Select>
+    <Select Path="Microsoft-Windows-PowerShell/Analytic">*[System[Provider[@Name='Microsoft-Windows-PowerShell' or @Name='PowerShell'] and (Level=1  or Level=2 or Level=3 or Level=4 or Level=0 or Level=5) and (EventID=4104) and TimeCreated[timediff(@SystemTime) &lt;= 2592000000]]]</Select>
+    <Select Path="Microsoft-Windows-PowerShell/Debug">*[System[Provider[@Name='Microsoft-Windows-PowerShell' or @Name='PowerShell'] and (Level=1  or Level=2 or Level=3 or Level=4 or Level=0 or Level=5) and (EventID=4104) and TimeCreated[timediff(@SystemTime) &lt;= 2592000000]]]</Select>
+    <Select Path="Microsoft-Windows-PowerShell/Operational">*[System[Provider[@Name='Microsoft-Windows-PowerShell' or @Name='PowerShell'] and (Level=1  or Level=2 or Level=3 or Level=4 or Level=0 or Level=5) and (EventID=4104) and TimeCreated[timediff(@SystemTime) &lt;= 2592000000]]]</Select>
+    <Select Path="Windows PowerShell">*[System[Provider[@Name='Microsoft-Windows-PowerShell' or @Name='PowerShell'] and (Level=1  or Level=2 or Level=3 or Level=4 or Level=0 or Level=5) and (EventID=4104) and TimeCreated[timediff(@SystemTime) &lt;= 2592000000]]]</Select>
+  </Query>
+</QueryList>
